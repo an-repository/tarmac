@@ -8,14 +8,37 @@
 
 package tarmac
 
-type Context struct {
+import (
+	"sync"
+
+	"github.com/an-repository/tracer"
+)
+
+type pool struct {
+	sp *sync.Pool
 }
 
-func NewContext() *Context {
-	return &Context{}
+func newPool() *pool {
+	return &pool{
+		sp: &sync.Pool{
+			New: func() any {
+				tracer.Send("[tarmac] new context instance") //.........................................................
+				return &Context{}
+			},
+		},
+	}
 }
 
-func (c *Context) reset() {}
+func (p *pool) get() *Context {
+	c := p.sp.Get().(*Context)
+	c.reset()
+
+	return c
+}
+
+func (p *pool) put(c *Context) {
+	p.sp.Put(c)
+}
 
 /*
 ######################################################################################################## @(^_^)@ #######

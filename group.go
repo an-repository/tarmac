@@ -11,9 +11,16 @@ package tarmac
 import "net/http"
 
 type Group struct {
+	tarmac      *Tarmac
 	prefix      string
 	middlewares []MiddlewareFunc
-	tarmac      *Tarmac
+}
+
+func newGroup(t *Tarmac, prefix string) *Group {
+	return &Group{
+		tarmac: t,
+		prefix: prefix,
+	}
 }
 
 func (g *Group) Use(middlewares ...MiddlewareFunc) {
@@ -69,9 +76,7 @@ func (g *Group) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
 	m = append(m, g.middlewares...)
 	m = append(m, middlewares...)
 
-	sg := g.tarmac.Group(g.prefix+prefix, m...)
-
-	return sg
+	return g.tarmac.Group(g.prefix+prefix, m...)
 }
 
 /*

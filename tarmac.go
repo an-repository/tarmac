@@ -12,6 +12,7 @@ import "net/http"
 
 type (
 	Tarmac struct {
+		pool   *pool
 		router *Router
 	}
 
@@ -33,6 +34,7 @@ var _allMethods = []string{
 
 func New() *Tarmac {
 	return &Tarmac{
+		pool:   newPool(),
 		router: NewRouter(),
 	}
 }
@@ -78,14 +80,15 @@ func (t *Tarmac) Any(path string, handler HandlerFunc, middlewares ...Middleware
 }
 
 func (t *Tarmac) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
-	g := &Group{
-		prefix: prefix,
-		tarmac: t,
-	}
-
+	g := newGroup(t, prefix)
 	g.Use(middlewares...)
 
 	return g
+}
+
+func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c := t.pool.get()
+	defer t.pool.put(c)
 }
 
 /*
