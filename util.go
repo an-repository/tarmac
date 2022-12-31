@@ -8,12 +8,22 @@
 
 package tarmac
 
+import "net/http"
+
 func applyMiddleware(handler HandlerFunc, middlewares ...MiddlewareFunc) HandlerFunc {
 	for i := len(middlewares) - 1; i >= 0; i-- {
 		handler = middlewares[i](handler)
 	}
 
 	return handler
+}
+
+func getPath(r *http.Request) string {
+	if path := r.URL.RawPath; path != "" {
+		return path
+	}
+
+	return r.URL.Path
 }
 
 /*

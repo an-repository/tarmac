@@ -12,8 +12,10 @@ import "net/http"
 
 type (
 	Tarmac struct {
-		pool   *pool
-		router *Router
+		bMiddlewares []MiddlewareFunc
+		aMiddlewares []MiddlewareFunc
+		pool         *pool
+		router       *router
 	}
 
 	HandlerFunc    func(*Context) error
@@ -35,16 +37,20 @@ var _allMethods = []string{
 func New() *Tarmac {
 	return &Tarmac{
 		pool:   newPool(),
-		router: NewRouter(),
+		router: newRouter(),
 	}
 }
 
-func (t *Tarmac) Router() *Router {
-	return t.router
+func (t *Tarmac) UseBefore(middlewares ...MiddlewareFunc) {
+	t.bMiddlewares = append(t.bMiddlewares, middlewares...)
+}
+
+func (t *Tarmac) UseAfter(middlewares ...MiddlewareFunc) {
+	t.aMiddlewares = append(t.aMiddlewares, middlewares...)
 }
 
 func (t *Tarmac) Add(method, path string, handler HandlerFunc, middlewares ...MiddlewareFunc) error {
-	return t.router.Add(
+	return t.router.add(
 		method,
 		path,
 		func(c *Context) error {
@@ -86,9 +92,29 @@ func (t *Tarmac) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
 	return g
 }
 
+func (t *Tarmac) errorHandler(c *Context, err error) {
+	// FIXME
+}
+
 func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := t.pool.get()
 	defer t.pool.put(c)
+
+	var h HandlerFunc
+
+	if t.bMiddlewares == nil {
+		h = applyMiddleware(t.router.find(c, r.Method, getPath(r)), t.aMiddlewares...)
+	} else {
+		h = func(c *Context) error {
+			return applyMiddleware(t.router.find(c, r.Method, getPath(r)), t.aMiddlewares...)(c)
+		}
+
+		h = applyMiddleware(h, t.bMiddlewares...)
+	}
+
+	if err := h(c); err != nil {
+		t.errorHandler(c, err)
+	}
 }
 
 /*

@@ -10,26 +10,22 @@ package tarmac
 
 import "errors"
 
-type (
-	Route struct {
-		Name   string
-		Method string
-		Path   string
-	}
-
-	Router struct {
-	}
-)
-
-func NewRouter() *Router {
-	return &Router{}
+type router struct {
 }
 
-func (r *Router) Add(method, path string, handler HandlerFunc) error {
+func newRouter() *router {
+	return &router{}
+}
+
+func (r *router) add(method, path string, handler HandlerFunc) error {
 	if handler == nil {
 		return errors.New("handler cannot be nil") /////////////////////////////////////////////////////////////////////
 	}
 
+	return nil
+}
+
+func (r *router) find(c *Context, method, path string) HandlerFunc {
 	return nil
 }
 
