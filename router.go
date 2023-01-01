@@ -10,6 +10,7 @@ package tarmac
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 )
 
@@ -49,7 +50,25 @@ func (r *router) add(method, path string, handler HandlerFunc) error {
 }
 
 func (r *router) find(c *Context, method, path string) HandlerFunc {
-	return nil
+	if node := r.tree.match(c, path); node != nil {
+		handler, ok := node.handlers[strings.ToUpper(method)]
+		if ok {
+			return handler
+		}
+
+		if am := node.allowedMethods(); len(am) > 0 {
+			if method == http.MethodOptions {
+				return func(c *Context) error {
+					c.Response().Header().Add(HeaderAllow, am)
+					return c.NoContent(http.StatusNoContent)
+				}
+			}
+
+			return methodNotAllowedHandler
+		}
+	}
+
+	return notFoundHandler
 }
 
 /*

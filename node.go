@@ -8,7 +8,9 @@
 
 package tarmac
 
-import "strings"
+import (
+	"strings"
+)
 
 const (
 	_paramPrefix = ":"
@@ -62,6 +64,75 @@ func (n *node) add(method string, handler HandlerFunc) {
 	}
 
 	n.handlers[strings.ToUpper(method)] = handler
+}
+
+func (n *node) match(c *Context, path string) *node {
+	cur := n
+	end := false
+
+	var seg string
+
+	for !end {
+		i := strings.Index(path, "/")
+
+		if i == -1 {
+			seg = path
+			path = ""
+			end = true
+		} else if i == 0 {
+			seg = ""
+			path = path[1:]
+		} else {
+			seg = path[:i]
+			path = path[i+1:]
+		}
+
+		if cur.nodes == nil {
+			return nil
+		}
+
+		tmp, ok := cur.nodes[seg]
+		if ok {
+			cur = tmp
+		} else {
+			for _, v := range cur.nodes {
+				if v.param != "" {
+					if end {
+						if v.nodes == nil {
+							// FIXME c.AddParam(v.param, seg)
+							return v
+						}
+					} else if tmp = v.match(c, path); tmp != nil {
+						// FIXME c.AddParam(v.param, seg)
+						return tmp
+					}
+				} else if v.wildcard && v.nodes == nil {
+					// FIXME c.AddParam(_wildcardStr, strings.TrimRight(seg+"/"+path, "/"))
+					return v
+				}
+			}
+
+			return nil
+		}
+	}
+
+	return cur
+}
+
+func (n *node) allowedMethods() []string {
+	var out []string
+
+	if n.handlers != nil {
+		out = make([]string, len(n.handlers))
+
+		i := 0
+		for m := range n.handlers {
+			out[i] = m
+			i++
+		}
+	}
+
+	return out
 }
 
 /*
