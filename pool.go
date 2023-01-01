@@ -9,6 +9,7 @@
 package tarmac
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/an-repository/tracer"
@@ -23,15 +24,15 @@ func newPool() *pool {
 		sp: &sync.Pool{
 			New: func() any {
 				tracer.Send("[tarmac] new context instance") //.........................................................
-				return &Context{}
+				return newContext()
 			},
 		},
 	}
 }
 
-func (p *pool) get() *Context {
+func (p *pool) get(w http.ResponseWriter, r *http.Request) *Context {
 	c := p.sp.Get().(*Context)
-	c.reset()
+	c.reset(w, r)
 
 	return c
 }

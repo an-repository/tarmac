@@ -57,18 +57,23 @@ func (r *router) find(c *Context, method, path string) HandlerFunc {
 		}
 
 		if am := node.allowedMethods(); len(am) > 0 {
+			amStr := strings.Join(append(am, http.MethodOptions), ", ")
+
 			if method == http.MethodOptions {
 				return func(c *Context) error {
-					c.Response().Header().Add(HeaderAllow, am)
+					c.Response.Header().Add(HeaderAllow, amStr)
 					return c.NoContent(http.StatusNoContent)
 				}
 			}
 
-			return methodNotAllowedHandler
+			return func(c *Context) error {
+				c.Response.Header().Add(HeaderAllow, amStr)
+				return NewStatusError(http.StatusMethodNotAllowed)
+			}
 		}
 	}
 
-	return notFoundHandler
+	return NotFoundHandler
 }
 
 /*

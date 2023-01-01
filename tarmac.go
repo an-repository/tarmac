@@ -22,17 +22,23 @@ type (
 	MiddlewareFunc func(HandlerFunc) HandlerFunc
 )
 
-var _allMethods = []string{
-	http.MethodConnect,
-	http.MethodDelete,
-	http.MethodGet,
-	http.MethodHead,
-	http.MethodOptions,
-	http.MethodPatch,
-	http.MethodPost,
-	http.MethodPut,
-	http.MethodTrace,
-}
+var (
+	_allMethods = []string{
+		http.MethodConnect,
+		http.MethodDelete,
+		http.MethodGet,
+		http.MethodHead,
+		http.MethodOptions,
+		http.MethodPatch,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodTrace,
+	}
+
+	NotFoundHandler = func(*Context) error {
+		return NewStatusError(http.StatusNotFound)
+	}
+)
 
 func New() *Tarmac {
 	return &Tarmac{
@@ -97,7 +103,7 @@ func (t *Tarmac) errorHandler(c *Context, err error) {
 }
 
 func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	c := t.pool.get()
+	c := t.pool.get(w, r)
 	defer t.pool.put(c)
 
 	var h HandlerFunc

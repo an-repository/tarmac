@@ -10,25 +10,28 @@ package tarmac
 
 import "net/http"
 
-type Context struct {
-	Request  *http.Request
-	Response *Response
+type Response struct {
+	http.ResponseWriter
+	status    int
+	committed bool
 }
 
-func newContext() *Context {
-	return &Context{
-		Response: newResponse(),
+func newResponse() *Response {
+	return &Response{}
+}
+
+func (r *Response) reset(w http.ResponseWriter) {
+	r.ResponseWriter = w
+	r.status = 0
+	r.committed = false
+}
+
+func (r *Response) WriteHeader(status int) {
+	if !r.committed {
+		r.ResponseWriter.WriteHeader(status)
+		r.status = status
+		r.committed = true
 	}
-}
-
-func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
-	c.Request = r
-	c.Response.reset(w)
-}
-
-func (c *Context) NoContent(status int) error {
-	c.Response.WriteHeader(status)
-	return nil
 }
 
 /*
