@@ -8,9 +8,7 @@
 
 package tarmac
 
-import (
-	"strings"
-)
+import "strings"
 
 const (
 	_paramPrefix = ":"
