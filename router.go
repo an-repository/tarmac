@@ -57,7 +57,7 @@ func (r *router) find(c *Context, method, path string) HandlerFunc {
 		}
 
 		if am := node.allowedMethods(); len(am) > 0 {
-			amStr := strings.Join(append(am, http.MethodOptions), ", ")
+			amStr := strings.Join(am, ", ")
 
 			if method == http.MethodOptions {
 				return func(c *Context) error {

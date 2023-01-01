@@ -99,7 +99,29 @@ func (t *Tarmac) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
 }
 
 func (t *Tarmac) errorHandler(c *Context, err error) {
-	// FIXME
+	if c.Response.committed {
+		return
+	}
+
+	e, ok := err.(*Error)
+	if !ok {
+		e = NewError(http.StatusInternalServerError, err)
+	}
+
+	if c.Request.Method == http.MethodHead {
+		_ = c.NoContent(e.Status)
+	}
+	/* FIXME
+	 else {
+		_ = c.JSON(e)
+	}
+	*/
+
+	if c.Response.committed {
+		return
+	}
+
+	c.Response.WriteHeader(e.Status)
 }
 
 func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
