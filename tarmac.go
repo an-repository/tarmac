@@ -156,11 +156,11 @@ func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Tarmac) Start() error {
-	return t.server.Start() // FIXME: server == nil ?
+	return t.server.Start()
 }
 
 func (t *Tarmac) Stop(ctx context.Context) error {
-	return t.server.Stop(ctx) // FIXME: server == nil ?
+	return t.server.Stop(ctx)
 }
 
 /*
