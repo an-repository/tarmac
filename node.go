@@ -97,15 +97,15 @@ func (n *node) match(c *Context, path string) *node {
 				if v.param != "" {
 					if end {
 						if v.nodes == nil {
-							// FIXME c.AddParam(v.param, seg)
+							c.addParam(v.param, seg)
 							return v
 						}
 					} else if tmp = v.match(c, path); tmp != nil {
-						// FIXME c.AddParam(v.param, seg)
+						c.addParam(v.param, seg)
 						return tmp
 					}
 				} else if v.wildcard && v.nodes == nil {
-					// FIXME c.AddParam(_wildcardStr, strings.TrimRight(seg+"/"+path, "/"))
+					c.addParam(_wildcardStr, strings.TrimRight(seg+"/"+path, "/"))
 					return v
 				}
 			}

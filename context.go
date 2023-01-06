@@ -10,10 +10,18 @@ package tarmac
 
 import "net/http"
 
-type Context struct {
-	Request  *http.Request
-	Response *Response
-}
+type (
+	param struct {
+		name  string
+		value string
+	}
+
+	Context struct {
+		Request  *http.Request
+		Response *Response
+		params   []param
+	}
+)
 
 func newContext() *Context {
 	return &Context{
@@ -24,6 +32,21 @@ func newContext() *Context {
 func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 	c.Request = r
 	c.Response.reset(w)
+	c.params = c.params[:0]
+}
+
+func (c *Context) addParam(name, value string) {
+	c.params = append(c.params, param{name, value})
+}
+
+func (c *Context) Param(name string) string {
+	for _, p := range c.params {
+		if p.name == name {
+			return p.value
+		}
+	}
+
+	return ""
 }
 
 func (c *Context) NoContent(status int) error {
