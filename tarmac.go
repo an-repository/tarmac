@@ -8,7 +8,10 @@
 
 package tarmac
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 type (
 	Tarmac struct {
@@ -144,6 +147,14 @@ func (t *Tarmac) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h(c); err != nil {
 		t.errorHandler(c, err)
 	}
+}
+
+func (t *Tarmac) Start() error {
+	return t.server.Start() // FIXME: server == nil ?
+}
+
+func (t *Tarmac) Stop(ctx context.Context) error {
+	return t.server.Stop(ctx) // FIXME: server == nil ?
 }
 
 /*
