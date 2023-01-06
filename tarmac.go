@@ -16,6 +16,7 @@ type (
 		aMiddlewares []MiddlewareFunc
 		pool         *pool
 		router       *router
+		server       *server
 	}
 
 	HandlerFunc    func(*Context) error

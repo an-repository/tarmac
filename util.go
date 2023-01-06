@@ -8,7 +8,10 @@
 
 package tarmac
 
-import "net/http"
+import (
+	"net/http"
+	"os"
+)
 
 func applyMiddleware(handler HandlerFunc, middlewares ...MiddlewareFunc) HandlerFunc {
 	for i := len(middlewares) - 1; i >= 0; i-- {
@@ -24,6 +27,19 @@ func getPath(r *http.Request) string {
 	}
 
 	return r.URL.Path
+}
+
+func fileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, err
 }
 
 /*
