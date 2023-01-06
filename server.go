@@ -18,7 +18,7 @@ type server struct {
 	server *http.Server
 }
 
-func (t *Tarmac) NewServer(cfg *Config) error {
+func (t *Tarmac) newServer(cfg *Config) error {
 	s := &server{
 		cfg: cfg,
 		server: &http.Server{

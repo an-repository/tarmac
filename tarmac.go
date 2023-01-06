@@ -44,11 +44,17 @@ var (
 	}
 )
 
-func New() *Tarmac {
-	return &Tarmac{
+func New(cfg *Config) (*Tarmac, error) {
+	t := &Tarmac{
 		pool:   newPool(),
 		router: newRouter(),
 	}
+
+	if err := t.newServer(cfg); err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }
 
 func (t *Tarmac) UseBefore(middlewares ...MiddlewareFunc) {
